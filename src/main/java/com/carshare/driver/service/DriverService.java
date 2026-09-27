@@ -7,15 +7,18 @@ import com.carshare.driver.exception.DriverNotFoundException;
 import com.carshare.driver.exception.DuplicateEmailException;
 import com.carshare.driver.exception.DuplicateLicenseException;
 import com.carshare.driver.repository.DriverRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DriverService {
 
     private final DriverRepository driverRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public DriverService(DriverRepository driverRepository) {
+    public DriverService(DriverRepository driverRepository, PasswordEncoder passwordEncoder) {
         this.driverRepository = driverRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public DriverResponse registerDriver(DriverRequest request) {
@@ -27,11 +30,13 @@ public class DriverService {
             throw new DuplicateLicenseException(request.getDrivingLicense());
         }
 
+        String hashedPassword = passwordEncoder.encode(request.getPassword());
+
         Driver driver = new Driver(
                 request.getName(),
                 request.getEmail(),
                 request.getMobile(),
-                request.getPassword(), // NOTE: still plain text — fixed in Phase 5
+                hashedPassword,
                 request.getDrivingLicense()
         );
 
@@ -51,9 +56,6 @@ public class DriverService {
 
         driver.setName(request.getName());
         driver.setMobile(request.getMobile());
-        // Email, password, and drivingLicense intentionally not updated
-        // here — same reasoning as Owner: sensitive fields deserve a
-        // dedicated, explicit flow rather than a generic update endpoint.
 
         Driver updatedDriver = driverRepository.save(driver);
         return DriverResponse.fromEntity(updatedDriver);

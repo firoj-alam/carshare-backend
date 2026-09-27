@@ -3,19 +3,21 @@ package com.carshare.owner.service;
 import com.carshare.owner.dto.OwnerRequest;
 import com.carshare.owner.dto.OwnerResponse;
 import com.carshare.owner.entity.Owner;
-import com.carshare.owner.entity.VerificationStatus;
 import com.carshare.owner.exception.DuplicateEmailException;
 import com.carshare.owner.exception.OwnerNotFoundException;
 import com.carshare.owner.repository.OwnerRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OwnerService {
 
     private final OwnerRepository ownerRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public OwnerService(OwnerRepository ownerRepository) {
+    public OwnerService(OwnerRepository ownerRepository, PasswordEncoder passwordEncoder) {
         this.ownerRepository = ownerRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public OwnerResponse registerOwner(OwnerRequest request) {
@@ -23,11 +25,13 @@ public class OwnerService {
             throw new DuplicateEmailException(request.getEmail());
         }
 
+        String hashedPassword = passwordEncoder.encode(request.getPassword());
+
         Owner owner = new Owner(
                 request.getName(),
                 request.getEmail(),
                 request.getMobile(),
-                request.getPassword() // NOTE: still plain text — fixed in Phase 5
+                hashedPassword
         );
 
         Owner savedOwner = ownerRepository.save(owner);
@@ -46,10 +50,6 @@ public class OwnerService {
 
         owner.setName(request.getName());
         owner.setMobile(request.getMobile());
-        // Email and password intentionally not updated here to keep this
-        // step simple. Changing email/password safely (re-verification,
-        // re-hashing) is a more sensitive flow we will handle explicitly
-        // in a later phase rather than lumping it into a generic update.
 
         Owner updatedOwner = ownerRepository.save(owner);
         return OwnerResponse.fromEntity(updatedOwner);
