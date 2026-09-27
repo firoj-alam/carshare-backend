@@ -1,0 +1,18 @@
+# Maven build output
+target/
+
+# Eclipse project files
+.classpath
+.project
+.settings/
+
+# IntelliJ (in case you switch later)
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Application secrets
+application-secrets.properties
