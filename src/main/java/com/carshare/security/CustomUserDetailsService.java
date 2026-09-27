@@ -1,5 +1,7 @@
 package com.carshare.security;
 
+import com.carshare.admin.entity.Admin;
+import com.carshare.admin.repository.AdminRepository;
 import com.carshare.driver.entity.Driver;
 import com.carshare.driver.repository.DriverRepository;
 import com.carshare.owner.entity.Owner;
@@ -16,10 +18,14 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final OwnerRepository ownerRepository;
     private final DriverRepository driverRepository;
+    private final AdminRepository adminRepository;
 
-    public CustomUserDetailsService(OwnerRepository ownerRepository, DriverRepository driverRepository) {
+    public CustomUserDetailsService(OwnerRepository ownerRepository,
+                                     DriverRepository driverRepository,
+                                     AdminRepository adminRepository) {
         this.ownerRepository = ownerRepository;
         this.driverRepository = driverRepository;
+        this.adminRepository = adminRepository;
     }
 
     @Override
@@ -34,6 +40,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (driverOpt.isPresent()) {
             Driver driver = driverOpt.get();
             return new CustomUserDetails(driver.getId(), driver.getEmail(), driver.getPassword(), "ROLE_DRIVER");
+        }
+
+        Optional<Admin> adminOpt = adminRepository.findByEmail(email);
+        if (adminOpt.isPresent()) {
+            Admin admin = adminOpt.get();
+            return new CustomUserDetails(admin.getId(), admin.getEmail(), admin.getPassword(), "ROLE_ADMIN");
         }
 
         throw new UsernameNotFoundException("No user found with email: " + email);

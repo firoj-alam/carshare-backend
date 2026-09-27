@@ -21,6 +21,19 @@ public class CarService {
     public CarService(CarRepository carRepository) {
         this.carRepository = carRepository;
     }
+    public CarResponse verifyCar(Long id) {
+        Car car = carRepository.findById(id)
+                .orElseThrow(() -> new CarNotFoundException(id));
+        car.setStatus(CarStatus.APPROVED);
+        return CarResponse.fromEntity(carRepository.save(car));
+    }
+
+    public CarResponse rejectCar(Long id) {
+        Car car = carRepository.findById(id)
+                .orElseThrow(() -> new CarNotFoundException(id));
+        car.setStatus(CarStatus.REJECTED);
+        return CarResponse.fromEntity(carRepository.save(car));
+    }
 
     public CarResponse addCar(Long ownerId, CarRequest request) {
         if (carRepository.existsByRegistrationNumber(request.getRegistrationNumber())) {

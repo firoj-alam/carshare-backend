@@ -49,6 +49,20 @@ public class DriverService {
                 .orElseThrow(() -> new DriverNotFoundException(id));
         return DriverResponse.fromEntity(driver);
     }
+    
+    public DriverResponse verifyDriver(Long id) {
+        Driver driver = driverRepository.findById(id)
+                .orElseThrow(() -> new DriverNotFoundException(id));
+        driver.setVerificationStatus(com.carshare.driver.entity.VerificationStatus.APPROVED);
+        return DriverResponse.fromEntity(driverRepository.save(driver));
+    }
+
+    public DriverResponse rejectDriver(Long id) {
+        Driver driver = driverRepository.findById(id)
+                .orElseThrow(() -> new DriverNotFoundException(id));
+        driver.setVerificationStatus(com.carshare.driver.entity.VerificationStatus.REJECTED);
+        return DriverResponse.fromEntity(driverRepository.save(driver));
+    }
 
     public DriverResponse updateDriver(Long id, DriverRequest request) {
         Driver driver = driverRepository.findById(id)

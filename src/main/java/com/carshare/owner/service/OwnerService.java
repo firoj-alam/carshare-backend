@@ -37,6 +37,20 @@ public class OwnerService {
         Owner savedOwner = ownerRepository.save(owner);
         return OwnerResponse.fromEntity(savedOwner);
     }
+    
+    public OwnerResponse verifyOwner(Long id) {
+        Owner owner = ownerRepository.findById(id)
+                .orElseThrow(() -> new OwnerNotFoundException(id));
+        owner.setVerificationStatus(com.carshare.owner.entity.VerificationStatus.APPROVED);
+        return OwnerResponse.fromEntity(ownerRepository.save(owner));
+    }
+
+    public OwnerResponse rejectOwner(Long id) {
+        Owner owner = ownerRepository.findById(id)
+                .orElseThrow(() -> new OwnerNotFoundException(id));
+        owner.setVerificationStatus(com.carshare.owner.entity.VerificationStatus.REJECTED);
+        return OwnerResponse.fromEntity(ownerRepository.save(owner));
+    }
 
     public OwnerResponse getOwnerById(Long id) {
         Owner owner = ownerRepository.findById(id)
