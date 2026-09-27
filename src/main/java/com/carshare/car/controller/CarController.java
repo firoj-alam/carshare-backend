@@ -3,6 +3,8 @@ package com.carshare.car.controller;
 import com.carshare.car.dto.CarRequest;
 import com.carshare.car.dto.CarResponse;
 import com.carshare.car.service.CarService;
+import com.carshare.security.SecurityUtil;
+
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +23,8 @@ public class CarController {
     }
 
     @PostMapping
-    public ResponseEntity<CarResponse> addCar(
-            @RequestParam Long ownerId,
-            @Valid @RequestBody CarRequest request) {
+    public ResponseEntity<CarResponse> addCar(@Valid @RequestBody CarRequest request) {
+        Long ownerId = SecurityUtil.getCurrentUserId();
         CarResponse response = carService.addCar(ownerId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

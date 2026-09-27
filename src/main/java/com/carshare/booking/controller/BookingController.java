@@ -3,6 +3,8 @@ package com.carshare.booking.controller;
 import com.carshare.booking.dto.BookingRequest;
 import com.carshare.booking.dto.BookingResponse;
 import com.carshare.booking.service.BookingService;
+import com.carshare.security.SecurityUtil;
+
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +23,8 @@ public class BookingController {
     }
 
     @PostMapping
-    public ResponseEntity<BookingResponse> requestBooking(
-            @RequestParam Long driverId,
-            @Valid @RequestBody BookingRequest request) {
+    public ResponseEntity<BookingResponse> requestBooking(@Valid @RequestBody BookingRequest request) {
+        Long driverId = SecurityUtil.getCurrentUserId();
         BookingResponse response = bookingService.requestBooking(driverId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
