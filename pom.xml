@@ -86,6 +86,17 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Flyway (Spring Boot 4 mein starter zaroori hai) -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-flyway</artifactId>
+</dependency>
+
+<!-- Flyway ka MySQL support (Flyway 10+ mein alag module hai) -->
+<dependency>
+    <groupId>org.flywaydb</groupId>
+    <artifactId>flyway-mysql</artifactId>
+</dependency>
 	</dependencies>
 
 	<build>
