@@ -13,12 +13,14 @@ public class CustomUserDetails implements UserDetails {
     private final String email;
     private final String password;
     private final String role;
+    private final boolean enabled;
 
-    public CustomUserDetails(Long id, String email, String password, String role) {
+    public CustomUserDetails(Long id, String email, String password, String role, boolean enabled) {
         this.id = id;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.enabled = enabled;
     }
 
     public Long getId() {
@@ -61,6 +63,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 }

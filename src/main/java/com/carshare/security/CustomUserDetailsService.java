@@ -30,23 +30,25 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Optional<Owner> ownerOpt = ownerRepository.findByEmail(email);
-        if (ownerOpt.isPresent()) {
-            Owner owner = ownerOpt.get();
-            return new CustomUserDetails(owner.getId(), owner.getEmail(), owner.getPassword(), "ROLE_OWNER");
-        }
+    	Optional<Owner> ownerOpt = ownerRepository.findByEmail(email);
+    	if (ownerOpt.isPresent()) {
+    	    Owner owner = ownerOpt.get();
+    	    boolean enabled = owner.getVerificationStatus() == com.carshare.owner.entity.VerificationStatus.APPROVED;
+    	    return new CustomUserDetails(owner.getId(), owner.getEmail(), owner.getPassword(), "ROLE_OWNER", enabled);
+    	}
 
-        Optional<Driver> driverOpt = driverRepository.findByEmail(email);
-        if (driverOpt.isPresent()) {
-            Driver driver = driverOpt.get();
-            return new CustomUserDetails(driver.getId(), driver.getEmail(), driver.getPassword(), "ROLE_DRIVER");
-        }
+    	Optional<Driver> driverOpt = driverRepository.findByEmail(email);
+    	if (driverOpt.isPresent()) {
+    	    Driver driver = driverOpt.get();
+    	    boolean enabled = driver.getVerificationStatus() == com.carshare.driver.entity.VerificationStatus.APPROVED;
+    	    return new CustomUserDetails(driver.getId(), driver.getEmail(), driver.getPassword(), "ROLE_DRIVER", enabled);
+    	}
 
-        Optional<Admin> adminOpt = adminRepository.findByEmail(email);
-        if (adminOpt.isPresent()) {
-            Admin admin = adminOpt.get();
-            return new CustomUserDetails(admin.getId(), admin.getEmail(), admin.getPassword(), "ROLE_ADMIN");
-        }
+    	Optional<Admin> adminOpt = adminRepository.findByEmail(email);
+    	if (adminOpt.isPresent()) {
+    	    Admin admin = adminOpt.get();
+    	    return new CustomUserDetails(admin.getId(), admin.getEmail(), admin.getPassword(), "ROLE_ADMIN", true);
+    	}
 
         throw new UsernameNotFoundException("No user found with email: " + email);
     }

@@ -68,4 +68,10 @@ public class OwnerService {
         Owner updatedOwner = ownerRepository.save(owner);
         return OwnerResponse.fromEntity(updatedOwner);
     }
+    public java.util.List<OwnerResponse> getAllOwners() {
+        return ownerRepository.findAll()
+                .stream()
+                .map(OwnerResponse::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+    }
 }

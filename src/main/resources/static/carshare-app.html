@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CarShare — Share the Drive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #16211D;
+    --ink-soft: #4C5A54;
+    --bg: #F2F4F3;
+    --surface: #FFFFFF;
+    --border: #DCE3DF;
+    --teal: #0F5C52;
+    --teal-deep: #0A413A;
+    --amber: #E0973B;
+    --danger: #C4453A;
+    --ok: #2F8F5B;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  h1, h2, h3, .brand { font-family: 'Space Grotesk', sans-serif; }
+
+  /* ---- Top bar ---- */
+  #topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 40px; border-bottom: 1px solid var(--border);
+  }
+  .brand { font-size: 19px; font-weight: 700; color: var(--teal-deep); letter-spacing: -0.01em; }
+  .brand span { color: var(--amber); }
+  #topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* ---- Buttons ---- */
+  .btn {
+    padding: 10px 18px; border-radius: 7px; font-size: 14px; font-weight: 600;
+    cursor: pointer; border: none; font-family: 'Inter', sans-serif;
+  }
+  .btn-primary { background: var(--teal); color: #fff; }
+  .btn-primary:hover { background: var(--teal-deep); }
+  .btn-ghost { background: transparent; color: var(--teal-deep); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--teal); }
+  .btn-block { width: 100%; }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  /* ---- Views ---- */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ---- Landing ---- */
+  #view-landing .hero {
+    max-width: 680px; margin: 90px auto 0; text-align: center; padding: 0 24px;
+  }
+  #view-landing h1 { font-size: 40px; line-height: 1.15; margin: 0 0 14px; color: var(--teal-deep); }
+  #view-landing p.lead { font-size: 16px; color: var(--ink-soft); margin: 0 0 34px; line-height: 1.6; }
+  .role-cards { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; }
+  .role-card {
+    width: 240px; text-align: left; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px; cursor: pointer;
+  }
+  .role-card:hover { border-color: var(--teal); }
+  .role-card .tag { font-size: 12px; color: var(--amber); font-weight: 600; margin-bottom: 8px; }
+  .role-card h3 { margin: 0 0 6px; font-size: 17px; }
+  .role-card p { margin: 0; font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+
+  /* ---- Auth cards ---- */
+  .auth-wrap { max-width: 420px; margin: 60px auto; padding: 0 24px; }
+  .auth-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 32px;
+  }
+  .auth-card h2 { margin: 0 0 4px; font-size: 21px; }
+  .auth-card p.sub { margin: 0 0 24px; font-size: 13px; color: var(--ink-soft); }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: var(--ink-soft); margin-bottom: 5px; }
+  .field input {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 7px;
+    font-size: 14px; font-family: 'Inter', sans-serif; color: var(--ink); background: #fff;
+  }
+  .field input:focus { outline: none; border-color: var(--teal); }
+  .switch-line { text-align: center; margin-top: 16px; font-size: 13px; color: var(--ink-soft); }
+  .switch-line a { color: var(--teal); cursor: pointer; font-weight: 600; text-decoration: none; }
+
+  .msg { padding: 10px 12px; border-radius: 7px; font-size: 13px; margin-bottom: 14px; display: none; }
+  .msg.show { display: block; }
+  .msg.err { background: rgba(196,69,58,0.1); color: var(--danger); }
+  .msg.ok { background: rgba(47,143,91,0.1); color: var(--ok); }
+
+  .back-link { font-size: 13px; color: var(--ink-soft); cursor: pointer; display: inline-block; margin-bottom: 18px; }
+  .back-link:hover { color: var(--teal); }
+
+  /* ---- placeholder for future dashboards ---- */
+  #view-placeholder .hero { max-width: 500px; margin: 100px auto 0; text-align: center; padding: 0 24px; }
+
+  /* ---- Dashboard shell ---- */
+  .dash { display: flex; min-height: calc(100vh - 65px); }
+  .dash-sidebar {
+    width: 220px; flex-shrink: 0; border-right: 1px solid var(--border);
+    padding: 24px 0;
+  }
+  .dash-nav-item {
+    padding: 10px 24px; font-size: 14px; color: var(--ink-soft); cursor: pointer;
+    border-left: 3px solid transparent; font-weight: 500;
+  }
+  .dash-nav-item:hover { color: var(--ink); background: rgba(15,92,82,0.05); }
+  .dash-nav-item.active { color: var(--teal); border-left-color: var(--teal); background: rgba(15,92,82,0.06); }
+  .dash-main { flex: 1; padding: 32px 40px; max-width: 900px; }
+  .dash-main h2 { margin: 0 0 4px; font-size: 22px; }
+  .dash-main p.sub { margin: 0 0 26px; font-size: 13px; color: var(--ink-soft); }
+  .dash-head { display: flex; justify-content: space-between; align-items: flex-start; }
+
+  .dash-panel { display: none; }
+  .dash-panel.active { display: block; }
+
+  .empty-state {
+    border: 1px dashed var(--border); border-radius: var(--radius); padding: 40px 20px;
+    text-align: center; color: var(--ink-soft); font-size: 13px;
+  }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-top: 8px; }
+  .item-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;
+  }
+  .item-card h3 { margin: 0 0 2px; font-size: 15px; }
+  .item-card .meta { font-size: 12px; color: var(--ink-soft); margin-bottom: 10px; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; }
+  .badge-pending { background: rgba(224,151,59,0.15); color: var(--amber); }
+  .badge-approved { background: rgba(47,143,91,0.15); color: var(--ok); }
+  .badge-rejected { background: rgba(196,69,58,0.15); color: var(--danger); }
+  .badge-accepted { background: rgba(15,92,82,0.12); color: var(--teal); }
+  .badge-active { background: rgba(15,92,82,0.12); color: var(--teal); }
+  .badge-completed { background: rgba(47,143,91,0.15); color: var(--ok); }
+  .badge-cancelled { background: rgba(76,90,84,0.12); color: var(--ink-soft); }
+
+  .req-row {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 18px; margin-bottom: 10px;
+  }
+  .req-row .info h4 { margin: 0 0 3px; font-size: 14px; }
+  .req-row .info .meta { font-size: 12px; color: var(--ink-soft); }
+  .req-actions { display: flex; gap: 8px; }
+  .btn-sm { padding: 7px 14px; font-size: 13px; }
+  .btn-danger { background: transparent; color: var(--danger); border: 1px solid rgba(196,69,58,0.4); }
+  .btn-danger:hover { background: rgba(196,69,58,0.08); }
+
+  .avail-row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .avail-row span { font-size: 12px; color: var(--ink-soft); }
+  .switch { position: relative; width: 38px; height: 21px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; inset: 0; background: #c9d1cd; border-radius: 20px; cursor: pointer; transition: 0.15s; }
+  .slider::before { content: ""; position: absolute; width: 15px; height: 15px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: 0.15s; }
+  input:checked + .slider { background: var(--teal); }
+  input:checked + .slider::before { transform: translateX(17px); }
+  input:disabled + .slider { opacity: 0.4; cursor: not-allowed; }
+
+  .inline-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-top: 16px; max-width: 420px; }
+  .inline-form .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="brand">Car<span>Share</span></div>
+  <div id="topbar-actions"></div>
+</div>
+
+<!-- LANDING -->
+<section class="view active" id="view-landing">
+  <div class="hero">
+    <h1>Your car, working for you.<br>Your ride, ready when you need it.</h1>
+    <p class="lead">CarShare connects owners with idle cars to verified drivers who need one. List your car in minutes, or find one nearby and get moving.</p>
+    <div class="role-cards">
+      <div class="role-card" onclick="showView('register', 'OWNER')">
+        <div class="tag">I OWN A CAR</div>
+        <h3>List your car</h3>
+        <p>Earn from a car that's sitting idle. You approve every request.</p>
+      </div>
+      <div class="role-card" onclick="showView('register', 'DRIVER')">
+        <div class="tag">I NEED A CAR</div>
+        <h3>Find a car nearby</h3>
+        <p>Browse verified cars and book the one that fits your trip.</p>
+      </div>
+    </div>
+    <p style="margin-top:26px; font-size:13px; color:var(--ink-soft)">
+      Already have an account? <a onclick="showView('login')" style="color:var(--teal); cursor:pointer; font-weight:600; text-decoration:none">Log in</a>
+    </p>
+  </div>
+</section>
+
+<!-- LOGIN -->
+<section class="view" id="view-login">
+  <div class="auth-wrap">
+    <div class="back-link" onclick="showView('landing')">&larr; Back</div>
+    <div class="auth-card">
+      <h2>Welcome back</h2>
+      <p class="sub">Log in to continue.</p>
+      <div class="msg err" id="login-msg"></div>
+      <div class="field"><label>Email</label><input id="login-email" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label>Password</label><input id="login-password" type="password" placeholder="••••••••"></div>
+      <button class="btn btn-primary btn-block" id="login-btn" onclick="doLogin()">Log in</button>
+      <div class="switch-line">New here? <a onclick="showView('landing')">Create an account</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- REGISTER (shared shell, fields toggle by role) -->
+<section class="view" id="view-register">
+  <div class="auth-wrap">
+    <div class="back-link" onclick="showView('landing')">&larr; Back</div>
+    <div class="auth-card">
+      <h2 id="reg-title">Create your account</h2>
+      <p class="sub" id="reg-sub"></p>
+      <div class="msg err" id="reg-msg"></div>
+      <div class="field"><label>Full name</label><input id="reg-name" placeholder="Jane Doe"></div>
+      <div class="field"><label>Email</label><input id="reg-email" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label>Mobile number</label><input id="reg-mobile" placeholder="10 digit number"></div>
+      <div class="field" id="reg-license-field" style="display:none">
+        <label>Driving license number</label><input id="reg-license" placeholder="DL-XXXXXXXX">
+      </div>
+      <div class="field"><label>Password</label><input id="reg-password" type="password" placeholder="At least 6 characters"></div>
+      <button class="btn btn-primary btn-block" id="reg-btn" onclick="doRegister()">Create account</button>
+      <div class="switch-line">Already have an account? <a onclick="showView('login')">Log in</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- PLACEHOLDER — used by roles whose dashboard isn't built yet -->
+<section class="view" id="view-placeholder">
+  <div class="hero">
+    <h2>You're logged in 🎉</h2>
+    <p style="color:var(--ink-soft)">Signed in as <strong id="ph-role"></strong> (<span id="ph-email"></span>).<br>The dashboard for this role is built in the next step.</p>
+    <button class="btn btn-ghost" onclick="logout()" style="margin-top:20px">Log out</button>
+  </div>
+</section>
+
+<!-- OWNER DASHBOARD -->
+<section class="view" id="view-owner">
+  <div class="dash">
+    <div class="dash-sidebar">
+      <div class="dash-nav-item active" data-dash-panel="owner-cars" onclick="showDashPanel('owner', 'owner-cars')">My Cars</div>
+      <div class="dash-nav-item" data-dash-panel="owner-requests" onclick="showDashPanel('owner', 'owner-requests')">Booking Requests</div>
+    </div>
+    <div class="dash-main">
+
+      <div class="dash-panel active" id="panel-owner-cars">
+        <div class="dash-head">
+          <div>
+            <h2>My cars</h2>
+            <p class="sub">Cars need admin approval before you can mark them available.</p>
+          </div>
+          <button class="btn btn-primary" onclick="toggleAddCarForm()">+ Add a car</button>
+        </div>
+
+        <div class="inline-form" id="add-car-form" style="display:none">
+          <div class="msg err" id="addcar-msg"></div>
+          <div class="grid2">
+            <div class="field"><label>Registration number</label><input id="ac-reg" placeholder="KA05AB1234"></div>
+            <div class="field"><label>Brand</label><input id="ac-brand" placeholder="Honda"></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label>Model</label><input id="ac-model" placeholder="City"></div>
+            <div class="field"><label>Fuel type</label><input id="ac-fuel" placeholder="Petrol"></div>
+          </div>
+          <div class="field" style="max-width:160px"><label>Year</label><input id="ac-year" placeholder="2022"></div>
+          <button class="btn btn-primary" id="ac-submit" onclick="submitAddCar()">Add car</button>
+          <button class="btn btn-ghost" onclick="toggleAddCarForm()">Cancel</button>
+        </div>
+
+        <div id="owner-cars-list" style="margin-top:18px"></div>
+      </div>
+
+      <div class="dash-panel" id="panel-owner-requests">
+        <h2>Booking requests</h2>
+        <p class="sub">Requests from drivers for any of your cars.</p>
+        <div id="owner-requests-list"></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- DRIVER DASHBOARD -->
+<section class="view" id="view-driver">
+  <div class="dash">
+    <div class="dash-sidebar">
+      <div class="dash-nav-item active" data-dash-panel="driver-browse" onclick="showDashPanel('driver', 'driver-browse')">Find a car</div>
+      <div class="dash-nav-item" data-dash-panel="driver-bookings" onclick="showDashPanel('driver', 'driver-bookings')">My Bookings</div>
+    </div>
+    <div class="dash-main">
+
+      <div class="dash-panel active" id="panel-driver-browse">
+        <h2>Available cars</h2>
+        <p class="sub">Only cars that are verified and currently switched on by their owner show up here.</p>
+        <div id="driver-cars-list"></div>
+      </div>
+
+      <div class="dash-panel" id="panel-driver-bookings">
+        <h2>My bookings</h2>
+        <p class="sub">Everything you've requested, from pending to completed.</p>
+        <div id="driver-bookings-list"></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ADMIN DASHBOARD -->
+<section class="view" id="view-admin">
+  <div class="dash">
+    <div class="dash-sidebar">
+      <div class="dash-nav-item active" data-dash-panel="admin-owners" onclick="showDashPanel('admin', 'admin-owners')">Pending Owners</div>
+      <div class="dash-nav-item" data-dash-panel="admin-drivers" onclick="showDashPanel('admin', 'admin-drivers')">Pending Drivers</div>
+      <div class="dash-nav-item" data-dash-panel="admin-cars" onclick="showDashPanel('admin', 'admin-cars')">Pending Cars</div>
+    </div>
+    <div class="dash-main">
+
+      <div class="dash-panel active" id="panel-admin-owners">
+        <h2>Pending owner verifications</h2>
+        <p class="sub">New owner accounts waiting on approval.</p>
+        <div id="admin-owners-list"></div>
+      </div>
+
+      <div class="dash-panel" id="panel-admin-drivers">
+        <h2>Pending driver verifications</h2>
+        <p class="sub">New driver accounts, license included, waiting on approval.</p>
+        <div id="admin-drivers-list"></div>
+      </div>
+
+      <div class="dash-panel" id="panel-admin-cars">
+        <h2>Pending car verifications</h2>
+        <p class="sub">Newly listed cars waiting on approval before they can go live.</p>
+        <div id="admin-cars-list"></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- BOOK CAR MODAL -->
+<div id="book-modal-backdrop" style="display:none; position:fixed; inset:0; background:rgba(22,33,29,0.45); align-items:center; justify-content:center; z-index:10;">
+  <div style="background:var(--surface); border-radius:var(--radius); padding:26px; width:360px;">
+    <h3 style="margin:0 0 4px" id="book-modal-title">Request this car</h3>
+    <p class="sub" style="margin-bottom:16px">Pick your dates and propose an amount. The owner will accept or decline.</p>
+    <div class="msg err" id="book-msg"></div>
+    <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field"><label>Start date</label><input id="book-start" type="date"></div>
+      <div class="field"><label>End date</label><input id="book-end" type="date"></div>
+    </div>
+    <div class="field"><label>Proposed amount (₹)</label><input id="book-amount" placeholder="3000"></div>
+    <div style="display:flex; gap:8px; margin-top:6px">
+      <button class="btn btn-primary" id="book-submit" onclick="submitBooking()">Send request</button>
+      <button class="btn btn-ghost" onclick="closeBookModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = ''; // same-origin: served by Spring Boot itself
+  let session = { token: null, role: null, id: null, email: null };
+  let pendingRole = 'OWNER';
+
+  function showView(name, role) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    if (name === 'register') {
+      pendingRole = role || 'OWNER';
+      document.getElementById('reg-title').textContent = pendingRole === 'OWNER' ? 'List your car' : 'Find a car';
+      document.getElementById('reg-sub').textContent = pendingRole === 'OWNER'
+        ? 'Create an owner account to start listing.'
+        : 'Create a driver account to start booking.';
+      document.getElementById('reg-license-field').style.display = pendingRole === 'DRIVER' ? 'block' : 'none';
+      clearMsg('reg-msg');
+    }
+  }
+
+  function clearMsg(id) {
+    const el = document.getElementById(id);
+    el.classList.remove('show');
+    el.textContent = '';
+  }
+  function setMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = 'msg show ' + (type || 'err');
+  }
+
+  async function api(method, path, body, auth) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (auth && session.token) headers['Authorization'] = 'Bearer ' + session.token;
+    const res = await fetch(API + path, {
+      method, headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined
+    });
+    const text = await res.text();
+    let data = {};
+    try { data = text ? JSON.parse(text) : {}; } catch (e) {}
+    return { ok: res.ok, status: res.status, data };
+  }
+
+  async function doLogin() {
+    clearMsg('login-msg');
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) { setMsg('login-msg', 'Enter both email and password.'); return; }
+
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true; btn.textContent = 'Logging in…';
+    const result = await api('POST', '/api/auth/login', { email, password });
+    btn.disabled = false; btn.textContent = 'Log in';
+
+    if (result.ok) {
+      session.token = result.data.token;
+      session.role = result.data.role;
+      session.id = result.data.userId;
+      session.email = result.data.email;
+      onAuthSuccess();
+    } else {
+      setMsg('login-msg', result.data.message || 'Invalid email or password.');
+    }
+  }
+
+  async function doRegister() {
+    clearMsg('reg-msg');
+    const name = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const mobile = document.getElementById('reg-mobile').value.trim();
+    const license = document.getElementById('reg-license').value.trim();
+    const password = document.getElementById('reg-password').value;
+
+    const body = { name, email, mobile, password };
+    if (pendingRole === 'DRIVER') body.drivingLicense = license;
+
+    const path = pendingRole === 'OWNER' ? '/api/owners/register' : '/api/drivers/register';
+    const btn = document.getElementById('reg-btn');
+    btn.disabled = true; btn.textContent = 'Creating account…';
+    const result = await api('POST', path, body);
+    btn.disabled = false; btn.textContent = 'Create account';
+
+    if (result.ok) {
+      // Auto login right after registration for a smooth first-run flow
+      const loginResult = await api('POST', '/api/auth/login', { email, password });
+      if (loginResult.ok) {
+        session.token = loginResult.data.token;
+        session.role = loginResult.data.role;
+        session.id = loginResult.data.userId;
+        session.email = loginResult.data.email;
+        onAuthSuccess();
+      } else {
+        setMsg('reg-msg', 'Account created — please log in.', 'ok');
+        showView('login');
+      }
+    } else if (result.data.fieldErrors) {
+      const first = Object.values(result.data.fieldErrors)[0];
+      setMsg('reg-msg', first);
+    } else {
+      setMsg('reg-msg', result.data.message || 'Something went wrong. Try again.');
+    }
+  }
+
+  function onAuthSuccess() {
+    renderTopbar();
+    if (session.role === 'ROLE_OWNER') {
+      showView('owner');
+      loadOwnerCars();
+    } else if (session.role === 'ROLE_DRIVER') {
+      showView('driver');
+      loadAvailableCars();
+    } else if (session.role === 'ROLE_ADMIN') {
+      showView('admin');
+      loadPendingOwners();
+    } else {
+      document.getElementById('ph-role').textContent = session.role.replace('ROLE_', '');
+      document.getElementById('ph-email').textContent = session.email;
+      showView('placeholder');
+    }
+  }
+
+  function showDashPanel(dash, panelName) {
+    document.querySelectorAll('#view-' + dash + ' .dash-nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelector('#view-' + dash + ' [data-dash-panel="' + panelName + '"]').classList.add('active');
+    document.querySelectorAll('#view-' + dash + ' .dash-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + panelName).classList.add('active');
+    if (panelName === 'owner-requests') loadOwnerRequests();
+    if (panelName === 'owner-cars') loadOwnerCars();
+    if (panelName === 'driver-browse') loadAvailableCars();
+    if (panelName === 'driver-bookings') loadDriverBookings();
+    if (panelName === 'admin-owners') loadPendingOwners();
+    if (panelName === 'admin-drivers') loadPendingDrivers();
+    if (panelName === 'admin-cars') loadPendingCars();
+  }
+
+  function statusBadge(status) {
+    const cls = status === 'APPROVED' ? 'badge-approved' : status === 'REJECTED' ? 'badge-rejected' : 'badge-pending';
+    return '<span class="badge ' + cls + '">' + status + '</span>';
+  }
+
+  let ownerCarsCache = {};
+
+  async function loadOwnerCars() {
+    const result = await api('GET', '/api/cars/owner/' + session.id, undefined, true);
+    const el = document.getElementById('owner-cars-list');
+    if (!result.ok) { el.innerHTML = '<div class="empty-state">Could not load your cars.</div>'; return; }
+    ownerCarsCache = {};
+    result.data.forEach(c => ownerCarsCache[c.id] = c);
+    if (result.data.length === 0) {
+      el.innerHTML = '<div class="empty-state">You haven\'t listed a car yet. Click "Add a car" to get started.</div>';
+      return;
+    }
+    el.innerHTML = '<div class="card-grid">' + result.data.map(renderOwnerCarCard).join('') + '</div>';
+  }
+
+  function carLabel(carId) {
+    const c = ownerCarsCache[carId];
+    return c ? (c.brand + ' ' + c.model + ' (' + c.registrationNumber + ')') : ('Car #' + carId);
+  }
+
+  async function loadOwnerRequests() {
+    const el = document.getElementById('owner-requests-list');
+    // Make sure we have car names to display, in case this tab is opened before "My Cars" loads.
+    if (Object.keys(ownerCarsCache).length === 0) await loadOwnerCars();
+
+    const result = await api('GET', '/api/bookings/owner/' + session.id, undefined, true);
+    if (!result.ok) { el.innerHTML = '<div class="empty-state">Could not load requests.</div>'; return; }
+    if (result.data.length === 0) {
+      el.innerHTML = '<div class="empty-state">No booking requests yet.</div>';
+      return;
+    }
+    el.innerHTML = result.data.map(renderOwnerRequestRow).join('');
+  }
+
+  function renderOwnerRequestRow(b) {
+    const badgeClass = 'badge-' + b.status.toLowerCase();
+    let actions = '';
+    if (b.status === 'PENDING') {
+      actions = '<button class="btn btn-primary btn-sm" onclick="respondBooking(' + b.id + ', \'accept\')">Accept</button>' +
+                '<button class="btn btn-danger btn-sm" onclick="respondBooking(' + b.id + ', \'reject\')">Decline</button>';
+    } else {
+      actions = '<span class="badge ' + badgeClass + '">' + b.status + '</span>';
+    }
+    return '<div class="req-row"><div class="info">' +
+      '<h4>' + carLabel(b.carId) + '</h4>' +
+      '<div class="meta">' + b.startDate + ' → ' + b.endDate + ' · ₹' + b.agreedAmount + ' · Driver #' + b.driverId + '</div>' +
+      '</div><div class="req-actions">' + actions + '</div></div>';
+  }
+
+  async function respondBooking(bookingId, action) {
+    await api('PUT', '/api/bookings/' + bookingId + '/' + action, undefined, true);
+    loadOwnerRequests();
+  }
+
+  function renderOwnerCarCard(car) {
+    const canToggle = car.status === 'APPROVED';
+    return '<div class="item-card">' +
+      '<h3>' + car.brand + ' ' + car.model + '</h3>' +
+      '<div class="meta">' + car.registrationNumber + ' · ' + car.fuelType + ' · ' + car.manufacturingYear + '</div>' +
+      statusBadge(car.status) +
+      '<div class="avail-row"><span>' + (car.available ? 'Available to drivers' : 'Not available') + '</span>' +
+      '<label class="switch"><input type="checkbox" ' + (car.available ? 'checked' : '') + ' ' + (canToggle ? '' : 'disabled') +
+      ' onchange="toggleAvailability(' + car.id + ', this.checked)"><span class="slider"></span></label></div>' +
+      (canToggle ? '' : '<div class="meta" style="margin-top:8px">Waiting on admin approval before this can go live.</div>') +
+      '</div>';
+  }
+
+  async function toggleAvailability(carId, makeAvailable) {
+    await api('PATCH', '/api/cars/' + carId + '/availability?available=' + makeAvailable, undefined, true);
+    loadOwnerCars();
+  }
+
+  function toggleAddCarForm() {
+    const form = document.getElementById('add-car-form');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    clearMsg('addcar-msg');
+  }
+
+  async function submitAddCar() {
+    clearMsg('addcar-msg');
+    const body = {
+      registrationNumber: document.getElementById('ac-reg').value.trim(),
+      brand: document.getElementById('ac-brand').value.trim(),
+      model: document.getElementById('ac-model').value.trim(),
+      fuelType: document.getElementById('ac-fuel').value.trim(),
+      manufacturingYear: Number(document.getElementById('ac-year').value.trim())
+    };
+    const btn = document.getElementById('ac-submit');
+    btn.disabled = true; btn.textContent = 'Adding…';
+    const result = await api('POST', '/api/cars', body, true);
+    btn.disabled = false; btn.textContent = 'Add car';
+
+    if (result.ok) {
+      toggleAddCarForm();
+      ['ac-reg','ac-brand','ac-model','ac-fuel','ac-year'].forEach(id => document.getElementById(id).value = '');
+      loadOwnerCars();
+    } else if (result.data.fieldErrors) {
+      setMsg('addcar-msg', Object.values(result.data.fieldErrors)[0]);
+    } else {
+      setMsg('addcar-msg', result.data.message || 'Could not add car.');
+    }
+  }
+
+  /* ---- Driver: browse + book ---- */
+  let bookingCarId = null;
+
+  async function loadAvailableCars() {
+    const result = await api('GET', '/api/cars/available', undefined, true);
+    const el = document.getElementById('driver-cars-list');
+    if (!result.ok) { el.innerHTML = '<div class="empty-state">Could not load cars right now.</div>'; return; }
+    if (result.data.length === 0) {
+      el.innerHTML = '<div class="empty-state">No cars are available right now. Check back soon.</div>';
+      return;
+    }
+    el.innerHTML = '<div class="card-grid">' + result.data.map(renderDriverCarCard).join('') + '</div>';
+  }
+
+  function renderDriverCarCard(car) {
+    return '<div class="item-card">' +
+      '<h3>' + car.brand + ' ' + car.model + '</h3>' +
+      '<div class="meta">' + car.registrationNumber + ' · ' + car.fuelType + ' · ' + car.manufacturingYear + '</div>' +
+      '<button class="btn btn-primary btn-block" onclick="openBookModal(' + car.id + ', \'' + car.brand + ' ' + car.model + '\')">Request to book</button>' +
+      '</div>';
+  }
+
+  function openBookModal(carId, label) {
+    bookingCarId = carId;
+    document.getElementById('book-modal-title').textContent = 'Request the ' + label;
+    document.getElementById('book-start').value = '';
+    document.getElementById('book-end').value = '';
+    document.getElementById('book-amount').value = '';
+    clearMsg('book-msg');
+    document.getElementById('book-modal-backdrop').style.display = 'flex';
+  }
+  function closeBookModal() {
+    document.getElementById('book-modal-backdrop').style.display = 'none';
+  }
+
+  async function submitBooking() {
+    clearMsg('book-msg');
+    const body = {
+      carId: bookingCarId,
+      startDate: document.getElementById('book-start').value,
+      endDate: document.getElementById('book-end').value,
+      agreedAmount: Number(document.getElementById('book-amount').value)
+    };
+    if (!body.startDate || !body.endDate || !body.agreedAmount) {
+      setMsg('book-msg', 'Fill in dates and an amount.'); return;
+    }
+    const btn = document.getElementById('book-submit');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    const result = await api('POST', '/api/bookings', body, true);
+    btn.disabled = false; btn.textContent = 'Send request';
+
+    if (result.ok) {
+      closeBookModal();
+      loadAvailableCars();
+    } else if (result.data.fieldErrors) {
+      setMsg('book-msg', Object.values(result.data.fieldErrors)[0]);
+    } else {
+      setMsg('book-msg', result.data.message || 'Could not send the request.');
+    }
+  }
+
+  /* ---- Driver: my bookings ---- */
+  let carLabelCache = {};
+
+  async function carLabelById(carId) {
+    if (carLabelCache[carId]) return carLabelCache[carId];
+    const result = await api('GET', '/api/cars/' + carId, undefined, true);
+    const label = result.ok ? (result.data.brand + ' ' + result.data.model + ' (' + result.data.registrationNumber + ')') : ('Car #' + carId);
+    carLabelCache[carId] = label;
+    return label;
+  }
+
+  async function loadDriverBookings() {
+    const el = document.getElementById('driver-bookings-list');
+    const result = await api('GET', '/api/bookings/driver/' + session.id, undefined, true);
+    if (!result.ok) { el.innerHTML = '<div class="empty-state">Could not load your bookings.</div>'; return; }
+    if (result.data.length === 0) {
+      el.innerHTML = '<div class="empty-state">No bookings yet — find a car and send your first request.</div>';
+      return;
+    }
+    const rows = await Promise.all(result.data.map(renderDriverBookingRow));
+    el.innerHTML = rows.join('');
+  }
+
+  async function renderDriverBookingRow(b) {
+    const label = await carLabelById(b.carId);
+    const badgeClass = 'badge-' + b.status.toLowerCase();
+    let actions = '<span class="badge ' + badgeClass + '">' + b.status + '</span>';
+    if (b.status === 'ACCEPTED') {
+      actions = '<button class="btn btn-primary btn-sm" onclick="driverBookingAction(' + b.id + ', \'activate\')">Start trip</button>' +
+                '<button class="btn btn-danger btn-sm" onclick="driverBookingAction(' + b.id + ', \'cancel\')">Cancel</button>';
+    } else if (b.status === 'PENDING') {
+      actions = '<span class="badge ' + badgeClass + '">PENDING</span>' +
+                '<button class="btn btn-danger btn-sm" onclick="driverBookingAction(' + b.id + ', \'cancel\')">Cancel</button>';
+    } else if (b.status === 'ACTIVE') {
+      actions = '<button class="btn btn-primary btn-sm" onclick="driverBookingAction(' + b.id + ', \'complete\')">Complete trip</button>';
+    }
+    return '<div class="req-row"><div class="info">' +
+      '<h4>' + label + '</h4>' +
+      '<div class="meta">' + b.startDate + ' → ' + b.endDate + ' · ₹' + b.agreedAmount + '</div>' +
+      '</div><div class="req-actions">' + actions + '</div></div>';
+  }
+
+  async function driverBookingAction(bookingId, action) {
+    await api('PUT', '/api/bookings/' + bookingId + '/' + action, undefined, true);
+    loadDriverBookings();
+  }
+
+  /* ---- Admin: pending verifications ---- */
+  function renderPendingRow(entity, type, extraMeta) {
+    return '<div class="req-row"><div class="info">' +
+      '<h4>' + entity.name + '</h4>' +
+      '<div class="meta">' + entity.email + (extraMeta ? ' · ' + extraMeta : '') + '</div>' +
+      '</div><div class="req-actions">' +
+      '<button class="btn btn-primary btn-sm" onclick="adminRespond(\'' + type + '\', ' + entity.id + ', \'verify\')">Verify</button>' +
+      '<button class="btn btn-danger btn-sm" onclick="adminRespond(\'' + type + '\', ' + entity.id + ', \'reject\')">Reject</button>' +
+      '</div></div>';
+  }
+
+  async function loadPendingOwners() {
+    const el = document.getElementById('admin-owners-list');
+    const result = await api('GET', '/api/owners', undefined, true);
+    if (!result.ok) { el.innerHTML = '<div class="empty-state">Could not load owners.</div>'; return; }
+    const pending = result.data.filter(o => o.verificationStatus === 'PENDING');
+    el.innerHTML = pending.length === 0
+      ? '<div class="empty-state">No owners waiting on verification.</div>'
+      : pending.map(o => renderPendingRow(o, 'owners')).join('');
+  }
+
+  async function loadPendingDrivers() {
+    const el = document.getElementById('admin-drivers-list');
+    const result = await api('GET', '/api/drivers', undefined, true);
+    if (!result.ok) { el.innerHTML = '<div class="empty-state">Could not load drivers.</div>'; return; }
+    const pending = result.data.filter(d => d.verificationStatus === 'PENDING');
+    el.innerHTML = pending.length === 0
+      ? '<div class="empty-state">No drivers waiting on verification.</div>'
+      : pending.map(d => renderPendingRow(d, 'drivers', 'License: ' + d.drivingLicense)).join('');
+  }
+
+  async function loadPendingCars() {
+    const el = document.getElementById('admin-cars-list');
+    const result = await api('GET', '/api/cars', undefined, true);
+    if (!result.ok) { el.innerHTML = '<div class="empty-state">Could not load cars.</div>'; return; }
+    const pending = result.data.filter(c => c.status === 'PENDING');
+    el.innerHTML = pending.length === 0
+      ? '<div class="empty-state">No cars waiting on verification.</div>'
+      : pending.map(c => '<div class="req-row"><div class="info">' +
+          '<h4>' + c.brand + ' ' + c.model + '</h4>' +
+          '<div class="meta">' + c.registrationNumber + ' · Owner #' + c.ownerId + '</div>' +
+          '</div><div class="req-actions">' +
+          '<button class="btn btn-primary btn-sm" onclick="adminRespond(\'cars\', ' + c.id + ', \'verify\')">Verify</button>' +
+          '<button class="btn btn-danger btn-sm" onclick="adminRespond(\'cars\', ' + c.id + ', \'reject\')">Reject</button>' +
+          '</div></div>').join('');
+  }
+
+  async function adminRespond(type, id, action) {
+    await api('PUT', '/api/admin/' + type + '/' + id + '/' + action, undefined, true);
+    if (type === 'owners') loadPendingOwners();
+    if (type === 'drivers') loadPendingDrivers();
+    if (type === 'cars') loadPendingCars();
+  }
+
+  function logout() {
+    session = { token: null, role: null, id: null, email: null };
+    renderTopbar();
+    showView('landing');
+  }
+
+  function renderTopbar() {
+    const el = document.getElementById('topbar-actions');
+    if (session.token) {
+      el.innerHTML = '<span style="font-size:13px;color:var(--ink-soft);margin-right:10px">' +
+        session.email + '</span><button class="btn btn-ghost" onclick="logout()">Log out</button>';
+    } else {
+      el.innerHTML = '<button class="btn btn-ghost" onclick="showView(\'login\')">Log in</button>';
+    }
+  }
+
+  renderTopbar();
+</script>
+</body>
+</html>

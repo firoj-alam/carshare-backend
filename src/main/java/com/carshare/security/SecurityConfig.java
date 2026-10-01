@@ -45,11 +45,12 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/owners/register",
-                                "/api/drivers/register",
-                                "/api/auth/login"
-                        ).permitAll()
+                		.requestMatchers(
+                		        "/api/owners/register",
+                		        "/api/drivers/register",
+                		        "/api/auth/login",
+                		        "/carshare-app.html"
+                		).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

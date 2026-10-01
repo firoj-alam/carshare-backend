@@ -37,4 +37,8 @@ public class OwnerController {
         OwnerResponse response = ownerService.updateOwner(id, request);
         return ResponseEntity.ok(response);
     }
+    @GetMapping
+    public ResponseEntity<java.util.List<OwnerResponse>> getAllOwners() {
+        return ResponseEntity.ok(ownerService.getAllOwners());
+    }
 }
