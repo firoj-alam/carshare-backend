@@ -37,4 +37,11 @@ public class DriverController {
         DriverResponse response = driverService.updateDriver(id, request);
         return ResponseEntity.ok(response);
     }
+    
+    @GetMapping
+    public ResponseEntity<java.util.List<DriverResponse>> getAllDrivers() {
+        return ResponseEntity.ok(driverService.getAllDrivers());
+    }
+    
+    
 }

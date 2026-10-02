@@ -74,4 +74,14 @@ public class DriverService {
         Driver updatedDriver = driverRepository.save(driver);
         return DriverResponse.fromEntity(updatedDriver);
     }
+    
+    public java.util.List<DriverResponse> getAllDrivers() {
+        return driverRepository.findAll()
+                .stream()
+                .map(DriverResponse::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+    }
+    
+    
+    
 }
