@@ -21,14 +21,16 @@ import java.util.stream.Collectors;
 @Service
 public class BookingService {
 
-    private final BookingRepository bookingRepository;
-    private final CarRepository carRepository;
+	private final BookingRepository bookingRepository;
+	private final CarRepository carRepository;
+	private final com.carshare.payment.service.PaymentService paymentService;
 
-    public BookingService(BookingRepository bookingRepository, CarRepository carRepository) {
-        this.bookingRepository = bookingRepository;
-        this.carRepository = carRepository;
-    }
-
+	public BookingService(BookingRepository bookingRepository, CarRepository carRepository,
+	                       com.carshare.payment.service.PaymentService paymentService) {
+	    this.bookingRepository = bookingRepository;
+	    this.carRepository = carRepository;
+	    this.paymentService = paymentService;
+	}
     public BookingResponse requestBooking(Long driverId, BookingRequest request) {
         Car car = carRepository.findById(request.getCarId())
                 .orElseThrow(() -> new CarNotFoundException(request.getCarId()));
@@ -124,7 +126,20 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.COMPLETED);
-        return BookingResponse.fromEntity(bookingRepository.save(booking));
+        Booking savedBooking = bookingRepository.save(booking);
+
+        Car car = carRepository.findById(booking.getCarId())
+                .orElseThrow(() -> new com.carshare.car.exception.CarNotFoundException(booking.getCarId()));
+
+        paymentService.createPaymentForBooking(
+                savedBooking.getId(),
+                savedBooking.getCarId(),
+                car.getOwnerId(),
+                savedBooking.getDriverId(),
+                savedBooking.getAgreedAmount()
+        );
+
+        return BookingResponse.fromEntity(savedBooking);
     }
 
     public BookingResponse cancelBooking(Long id) {
