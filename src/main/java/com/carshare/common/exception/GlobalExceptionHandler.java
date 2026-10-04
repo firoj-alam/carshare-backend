@@ -151,4 +151,16 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(status).body(errorResponse);
     }
+    
+    @ExceptionHandler(com.carshare.rating.exception.InvalidRatingException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRating(
+            com.carshare.rating.exception.InvalidRatingException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(com.carshare.rating.exception.DuplicateRatingException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateRating(
+            com.carshare.rating.exception.DuplicateRatingException ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
 }
