@@ -249,6 +249,7 @@
       <div class="dash-nav-item active" data-dash-panel="owner-cars" onclick="showDashPanel('owner', 'owner-cars')">My Cars</div>
       <div class="dash-nav-item" data-dash-panel="owner-requests" onclick="showDashPanel('owner', 'owner-requests')">Booking Requests</div>
       <div class="dash-nav-item" data-dash-panel="owner-ratings" onclick="showDashPanel('owner', 'owner-ratings')">My Rating</div>
+      <div class="dash-nav-item" data-dash-panel="owner-notifications" onclick="showDashPanel('owner', 'owner-notifications')">Notifications</div>
     </div>
     <div class="dash-main">
 
@@ -292,6 +293,12 @@
         <div id="owner-ratings-list"></div>
       </div>
 
+      <div class="dash-panel" id="panel-owner-notifications">
+        <h2>Notifications</h2>
+        <p class="sub">Updates about your cars and booking requests.</p>
+        <div id="owner-notifications-list"></div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -303,6 +310,7 @@
       <div class="dash-nav-item active" data-dash-panel="driver-browse" onclick="showDashPanel('driver', 'driver-browse')">Find a car</div>
       <div class="dash-nav-item" data-dash-panel="driver-bookings" onclick="showDashPanel('driver', 'driver-bookings')">My Bookings</div>
       <div class="dash-nav-item" data-dash-panel="driver-ratings" onclick="showDashPanel('driver', 'driver-ratings')">My Rating</div>
+      <div class="dash-nav-item" data-dash-panel="driver-notifications" onclick="showDashPanel('driver', 'driver-notifications')">Notifications</div>
     </div>
     <div class="dash-main">
 
@@ -323,6 +331,12 @@
         <p class="sub">What owners have said about you as a driver.</p>
         <div id="driver-rating-summary" style="margin-bottom:18px"></div>
         <div id="driver-ratings-list"></div>
+      </div>
+
+      <div class="dash-panel" id="panel-driver-notifications">
+        <h2>Notifications</h2>
+        <p class="sub">Updates about your booking requests.</p>
+        <div id="driver-notifications-list"></div>
       </div>
 
     </div>
@@ -538,6 +552,8 @@
     if (panelName === 'admin-cars') loadPendingCars();
     if (panelName === 'owner-ratings') loadMyRatings('owner-rating-summary', 'owner-ratings-list');
     if (panelName === 'driver-ratings') loadMyRatings('driver-rating-summary', 'driver-ratings-list');
+    if (panelName === 'owner-notifications') loadMyNotifications('owner-notifications-list');
+    if (panelName === 'driver-notifications') loadMyNotifications('driver-notifications-list');
   }
 
   function statusBadge(status) {
@@ -832,6 +848,16 @@
       '<h4>' + starText(r.stars) + '</h4>' +
       '<div class="meta">' + (r.comment ? r.comment : '<em>No comment left</em>') + '</div>' +
       '</div></div>'
+    ).join('');
+  }
+
+  async function loadMyNotifications(listElId) {
+    const el = document.getElementById(listElId);
+    const result = await api('GET', '/api/notifications', undefined, true);
+    if (!result.ok) { el.innerHTML = '<div class="empty-state">Could not load notifications.</div>'; return; }
+    if (result.data.length === 0) { el.innerHTML = '<div class="empty-state">No notifications yet.</div>'; return; }
+    el.innerHTML = result.data.map(n =>
+      '<div class="req-row"><div class="info"><div class="meta">' + n.message + '</div></div></div>'
     ).join('');
   }
 

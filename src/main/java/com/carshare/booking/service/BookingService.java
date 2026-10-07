@@ -25,11 +25,15 @@ public class BookingService {
 	private final CarRepository carRepository;
 	private final com.carshare.payment.service.PaymentService paymentService;
 
+	private final com.carshare.notification.service.NotificationService notificationService;
+
 	public BookingService(BookingRepository bookingRepository, CarRepository carRepository,
-	                       com.carshare.payment.service.PaymentService paymentService) {
+	                       com.carshare.payment.service.PaymentService paymentService,
+	                       com.carshare.notification.service.NotificationService notificationService) {
 	    this.bookingRepository = bookingRepository;
 	    this.carRepository = carRepository;
 	    this.paymentService = paymentService;
+	    this.notificationService = notificationService;
 	}
     public BookingResponse requestBooking(Long driverId, BookingRequest request) {
         Car car = carRepository.findById(request.getCarId())
@@ -58,6 +62,7 @@ public class BookingService {
         );
 
         Booking savedBooking = bookingRepository.save(booking);
+        notificationService.notify(car.getOwnerId(), "New booking request for your car " + car.getBrand() + " " + car.getModel());
         return BookingResponse.fromEntity(savedBooking);
     }
 
@@ -90,6 +95,7 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.ACCEPTED);
+        notificationService.notify(booking.getDriverId(), "Your booking request #" + booking.getId() + " was accepted.");
         return BookingResponse.fromEntity(bookingRepository.save(booking));
     }
 
@@ -102,6 +108,7 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.REJECTED);
+        notificationService.notify(booking.getDriverId(), "Your booking request #" + booking.getId() + " was declined.");
         return BookingResponse.fromEntity(bookingRepository.save(booking));
     }
 
