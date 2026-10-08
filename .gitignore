@@ -16,3 +16,5 @@ Thumbs.db
 
 # Application secrets
 application-secrets.properties
+
+.env
