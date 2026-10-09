@@ -131,7 +131,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(
             BadCredentialsException ex, HttpServletRequest request) {
+    	log.warn("Failed login attempt for path {}", request.getRequestURI());
         return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid email or password", request);
+        
     }
 
     @ExceptionHandler(AccessDeniedException.class)

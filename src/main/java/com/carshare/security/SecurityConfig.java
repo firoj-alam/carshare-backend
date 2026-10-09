@@ -62,12 +62,14 @@ public class SecurityConfig {
                 .exceptionHandling(ex ->
                         ex.authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/owners/register",
-                                "/api/drivers/register",
-                                "/api/auth/login",
-                                "/carshare-app.html"
-                        ).permitAll()
+                		.requestMatchers(
+                		        "/api/owners/register",
+                		        "/api/drivers/register",
+                		        "/api/auth/login",
+                		        "/tester.html",
+                		        "/carshare-app.html",
+                		        "/actuator/health"
+                		).permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
