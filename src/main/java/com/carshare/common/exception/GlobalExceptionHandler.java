@@ -1,5 +1,7 @@
 package com.carshare.common.exception;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +17,14 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
+	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+	@ExceptionHandler(NoResourceFoundException.class)
+	public ResponseEntity<ErrorResponse> handleNoResource(
+	        NoResourceFoundException ex, HttpServletRequest request) {
+	    return buildResponse(HttpStatus.NOT_FOUND, "Resource not found", request);
+	}
     // ===== Owner Exceptions =====
+	
 
     @ExceptionHandler(com.carshare.owner.exception.DuplicateEmailException.class)
     public ResponseEntity<ErrorResponse> handleOwnerDuplicateEmail(
@@ -137,6 +145,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex, HttpServletRequest request) {
+    	log.error("Unexpected error on {}", request.getRequestURI(), ex);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", request);
     }
 

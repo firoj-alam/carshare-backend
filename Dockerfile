@@ -11,15 +11,11 @@ COPY src src
 RUN mvn -q -DskipTests package
 
 
-FROM eclipse-temurin:21-jre
+FROM amazoncorretto:21
 
 WORKDIR /app
 
-RUN useradd --system --no-create-home appuser
-
 COPY --from=build /app/target/*.jar app.jar
-
-USER appuser
 
 EXPOSE 8080
 
